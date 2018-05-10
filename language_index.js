@@ -91,5 +91,5 @@ module.exports = {
 	'Javanese':	'jv',
     'Malagasy':	'mg',
 	'Japanese':	'ja',
-    'Malay': 'ms'
+    'Malay': 'ms',
 }

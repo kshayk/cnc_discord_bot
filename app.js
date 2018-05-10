@@ -3,10 +3,12 @@ const Discord = require('discord.js');
 const api_keys = require('./api_keys.js');
 const request = require('request');
 const language_map = require('./language_index.js');
+const fun_language_map = require('./fun_language_index.js');
 
 const google_api_endpoint = `https://maps.googleapis.com/maps/api/geocode/json?key=${api_keys.google_maps_api}&address=`;
 const weather_api_endpoint = `http://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid=${api_keys.weather_api}`;
 const translator_api_endpoint = `https://translate.yandex.net/api/v1.5/tr.json/translate?key=${encodeURI(api_keys.translator_api)}`;
+const fun_translator_api_endpoint = `http://api.funtranslations.com/translate/<language>.json`
 
 const bot = new Discord.Client({disableEveryone: true});
 
@@ -54,14 +56,14 @@ bot.on("message", async message => {
             if(error || body.error_message) {
               if(error !== null) {
                  console.log("google:" + error);
-                 return message.channel.send("An error has occurred");
+                 return message.channel.send(embedErrorMessage());
               } else {
                  console.log("google:" + body.error_message);
-                 return message.channel.send("An error has occurred");
+                 return message.channel.send(embedErrorMessage());
               }
             } else {
               if(body.results.length === 0 || body.status === 'ZERO_RESULTS') {
-                 message.channel.send("No results found for this location");
+                 return message.channel.send(embedErrorMessage("No results found for this location"));
               } else {
                 var latitude = body.results[0].geometry.location.lat;
                 var longtitude = body.results[0].geometry.location.lng;
@@ -74,7 +76,7 @@ bot.on("message", async message => {
                 }, (w_error, w_response, w_body) => {
                     if(w_error) {
                         console.log('Weather API: ' + w_error);
-                        return message.channel.send("An error has occurred");
+                        return message.channel.send(embedErrorMessage());
                     }
 
                     var temp_celcius = Math.round(w_body.main.temp - 273.15);
@@ -89,12 +91,37 @@ bot.on("message", async message => {
     }
 
     if(cmd === `${prefix}translate`) {
-        var language = capitalizeFirstLetter(args[0]);
-        if(typeof language_map[language] === 'undefined') {
-            return message.channel.send(`Language ${language} was not found.`);
+        if(typeof args[0] === 'undefined') {
+            //return list of options
+            var regular_languages = JSON.stringify(Object.keys(language_map));
+            var fun_languages = JSON.stringify(Object.keys(fun_language_map));
+
+            regular_languages = regular_languages.replace('[', '').replace(']','');
+            fun_languages = fun_languages.replace('[', '').replace(']', '');
+
+            var botembed = new Discord.RichEmbed()
+                .setDescription('$translate command')
+                .setColor('#81a9e8')
+                .addField('Summary', 'This command gets a language and a text and translate it accordingly. For example: $translate dutch hello world')
+                .addField('Regular languages', `The following languages are available to translate to: ${regular_languages}`)
+                .addField('Fun languages', `The following fun languages are available to translate to: ${fun_languages}`);
+
+            return message.channel.send(botembed);
         }
 
-        language = language_map[language];
+        var language = capitalizeFirstLetter(args[0]);
+        var language_type = null;
+        if(typeof language_map[language] === 'undefined') {
+            if(typeof fun_language_map[language] === 'undefined') {
+                return message.channel.send(`Language ${language} was not found.`);
+            } else {
+                language_type = 'fun';
+            }
+        } else {
+            language_type = 'regular';
+        }
+
+        language = (language_type === 'regular') ? language_map[language] : fun_language_map[language];
 
         var text = "";
 
@@ -104,7 +131,9 @@ bot.on("message", async message => {
 
         text = encodeURI(text.trim());
 
-        url = `${translator_api_endpoint}&text=${text}&lang=${language}`;
+        fun_translator_url = fun_translator_api_endpoint.replace('<language>', language);
+
+        url = (language_type === 'regular') ? `${translator_api_endpoint}&text=${text}&lang=${language}` : `${fun_translator_url}?text=${text}`;
 
         request({
             url,
@@ -116,14 +145,34 @@ bot.on("message", async message => {
                 return message.channel.send('An error occurred');
             }
 
-            if(body.code !== 200) {
-                console.log('Trasnlator error: ', body);
+            if(language_type === 'regular') {
+                if(body.code !== 200) {
+                    console.log('Trasnlator error: ', body);
 
-                return message.channel.send('An error occurred');
+                    return message.channel.send(embedErrorMessage());
+                }
+
+                return message.channel.send(body.text[0]);
+            } else {
+                if(body.error) {
+                    console.log('Fun translator error: ', body);
+
+                    return message.channel.send(embedErrorMessage());
+                }
+
+                return message.channel.send(body.contents.translated);
             }
-
-            return message.channel.send(body.text[0]);
         });
+    }
+
+    if(cmd === `${prefix}help`) {
+        var botembed = new Discord.RichEmbed()
+            .setDescription('CNC Bot Commands')
+            .setColor('#81a9e8')
+            .addField('$weather', 'Shows weather of a current location. Usage: $weather london uk')
+            .addField('$translate', 'Translates a certain word/phrase according to give language and text. Usage: $translate dutch hey how are you doing');
+
+        return message.channel.send(botembed);
     }
 
     if(cmd === `DC`) {
@@ -140,4 +189,14 @@ bot.login(api_keys.discord_bot_token);
 
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function embedErrorMessage(message = "An error has occurred") {
+    var botembed = new Discord.RichEmbed()
+        .setDescription('Error')
+        .setColor('#e50000')
+        .setThumbnail('https://www.iconsdb.com/icons/preview/red/error-xxl.png')
+        .addField('Error', message)
+
+    return botembed;
 }
