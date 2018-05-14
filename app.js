@@ -226,13 +226,10 @@ bot.on("message", async message => {
 
             var server_id = message.member.guild.id;
 
-            console.log(server_id, user_id);
-
             db.afks.find({server_id, user_id}, (err, docs) => {
                 if(docs.length !== 0) {
                     var user = bot.users.get(user_id);
 
-                    console.log(user);
                     return message.channel.send(embedWarningMessage(`The user ${user.username} has set his account as AFK. Please try again later`));
                 }
             });
