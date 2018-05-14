@@ -1,5 +1,7 @@
 const botconfig = require('./botconfig.json');
 const Discord = require('discord.js');
+const mongojs = require('mongojs');
+const db = mongojs('cnc_bot', ['afks']); //specifiyng the database and table(s)
 const api_keys = require('./api_keys.js');
 const request = require('request');
 const language_map = require('./language_index.js');
@@ -175,6 +177,39 @@ bot.on("message", async message => {
         return message.channel.send(botembed);
     }
 
+    if(cmd === `${prefix}afk`) {
+        // console.log(message);
+        var server_id = message.member.guild.id;
+        var user_id = message.member.id.replace('!', '');
+
+        var newUser = {
+          server_id,
+          user_id
+        };
+
+        db.afks.find({server_id, user_id}, (err, docs) => {
+            if(docs.length === 0) {
+                db.afks.insert(newUser, (err, result) => {
+                    if(err) {
+                        console.log('Failed to insert user into database', err);
+                        return message.channel.send(embedErrorMessage());
+                    }
+
+                    return message.channel.send('Successfully added user to the AFK list');
+                });
+            } else {
+                db.afks.remove(newUser, (err) => {
+                  if(err) {
+                      console.log('Failed to remove user from database', err);
+                      return message.channel.send(embedErrorMessage());
+                  }
+
+                  return message.channel.send('Successfully removed user from the AFK list');
+                });
+            }
+        });
+    }
+
     if(cmd === `DC`) {
         return message.channel.send("SO");
     }
@@ -183,12 +218,41 @@ bot.on("message", async message => {
         return message.channel.send("RN");
     }
 
+    if(hasMemberTagged(message.content)) {
+        var taggedUserArray = findUserRegEx(message.content);
+
+        for(var i = 0; i < taggedUserArray.length; i++) {
+            var user_id = taggedUserArray[i].replace('<@', '').replace('>', '').replace('!', '');
+
+            var server_id = message.member.guild.id;
+
+            console.log(server_id, user_id);
+
+            db.afks.find({server_id, user_id}, (err, docs) => {
+                if(docs.length !== 0) {
+                    var user = bot.users.get(user_id);
+
+                    console.log(user);
+                    return message.channel.send(embedWarningMessage(`The user ${user.username} has set his account as AFK. Please try again later`));
+                }
+            });
+        }
+    }
 });
 
 bot.login(api_keys.discord_bot_token);
 
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function embedWarningMessage(message) {
+    var botembed = new Discord.RichEmbed()
+        .setColor('#efad5d')
+        .setThumbnail('https://cdn4.iconfinder.com/data/icons/web-kalorcon/142/error-512.png')
+        .addField('Warning', message)
+
+    return botembed;
 }
 
 function embedErrorMessage(message = "An error has occurred") {
@@ -199,4 +263,31 @@ function embedErrorMessage(message = "An error has occurred") {
         .addField('Error', message)
 
     return botembed;
+}
+
+function hasMemberTagged(message_content) {
+    var getTaggedUsersArray = findUserRegEx(message_content);
+
+    if(getTaggedUsersArray.length !== 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function findUserRegEx(message_content) {
+    var patt = /<@[!0-9]+>/gm;
+    var regex_matches = [];
+    var missing_index_users = false;
+
+    var m;
+
+    do {
+        m = patt.exec(message_content);
+        if (m) {
+            regex_matches.push(m[0]);
+        }
+    } while (m);
+
+    return regex_matches;
 }
