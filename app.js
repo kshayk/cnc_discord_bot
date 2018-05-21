@@ -229,7 +229,7 @@ bot.on("message", async message => {
 
             // Create a reaction collector
             var filter = (reaction, user) => reaction.emoji.name === '👍' || reaction.emoji.name === '👎'
-            var collected = await my_message.awaitReactions(filter,  { time: 10000 });
+            var collected = await my_message.awaitReactions(filter,  { time: 60000 });
             var agree = await collected.get('👍') && await collected.get('👍').count-1;
             var disagree = await collected.get('👎') && await collected.get('👎').count-1;
 
