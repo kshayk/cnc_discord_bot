@@ -326,7 +326,7 @@ bot.on("message", async message => {
             .addField('$afk', 'Toggle your AFK status')
             .addField('$report', 'Creates a poll to report a user. Must have a "reports" text channel to support this method. Usage: $report @user#123 reason')
 
-        message.author.sendMessage(botembed);
+        message.author.send(botembed);
         return message.channel.send("Sent bot usage instruction via private message.");
     }
 
