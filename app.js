@@ -239,7 +239,6 @@ bot.on("message", async message => {
                 //check if strikes are more than 3, if so send message asking for kick.
                 db.reports.find({server_id: message.member.guild.id , user_id: rUser.id}, (err, docs) => {
                     if(err || docs.length === 0) {
-                        console.log('empty');
                         // update a record in the collection
                         db.reports.insert(
                             // find record with name "MyServer"
