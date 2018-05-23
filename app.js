@@ -338,7 +338,7 @@ bot.on("message", async message => {
     }
 
     if(cmd === "🔥") {
-        return message.channrl.send("🚒");
+        return message.channel.send("🚒");
     }
 
     if(hasMemberTagged(message.content)) {
