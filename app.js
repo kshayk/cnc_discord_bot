@@ -337,6 +337,10 @@ bot.on("message", async message => {
         return message.channel.send("RN");
     }
 
+    if(cmd === "🔥") {
+        return message.channrl.send("🚒");
+    }
+
     if(hasMemberTagged(message.content)) {
         var taggedUserArray = findUserRegEx(message.content);
 
