@@ -33,6 +33,48 @@ bot.on("message", async message => {
     let cmd = messageArray[0];
     let args = messageArray.slice(1);
 
+    // It's good practice to ignore other bots. This also makes your bot ignore itself
+    // and not get into a spam loop (we call that "botception").
+    if(message.author.bot) return;
+
+    // Also good practice to ignore any message that does not start with our prefix,
+    // which is set in the configuration file.
+    //In this case, some of the commands are without the prefix, so checking them first.
+    //if one of them matches the if statements; perform the action. if not; return.
+    if(message.content.indexOf(prefix) !== 0) {
+        if(cmd === "DC") {
+            return message.channel.send("SO");
+        }
+
+        if(cmd === "LIT") {
+            return message.channel.send("RN");
+        }
+
+        if(cmd === "🔥") {
+            return message.channel.send("🚒");
+        }
+
+        if(hasMemberTagged(message.content)) {
+            var taggedUserArray = findUserRegEx(message.content);
+
+            for(var i = 0; i < taggedUserArray.length; i++) {
+                var user_id = taggedUserArray[i].replace('<@', '').replace('>', '').replace('!', '');
+
+                var server_id = message.member.guild.id;
+
+                db.afks.find({server_id, user_id}, (err, docs) => {
+                    if(docs.length !== 0) {
+                        var user = bot.users.get(user_id);
+
+                        return message.channel.send(embedWarningMessage(`The user ${user.username} has set his account as AFK. Please try again later`));
+                    }
+                });
+            }
+        }
+
+        return;
+    };
+
     //get current weather for a specific location: $weather israel
     if(cmd === `${prefix}weather`) {
         var location_string = '';
@@ -308,6 +350,10 @@ bot.on("message", async message => {
     }
 
     if(cmd === `${prefix}kick`) {
+        if( ! message.guild.me.hasPermission("KICK_MEMBERS")) {
+                return message.channel.send(embedErrorMessage("The bot does not have permission to kick on this server"));
+        }
+
         if( ! message.member.hasPermission("KICK_MEMBERS")) {
             return message.channel.send(embedErrorMessage("You do not have permission to kick a user"));
         }
@@ -396,34 +442,11 @@ bot.on("message", async message => {
         return message.channel.send("Sent bot usage instruction via private message.");
     }
 
-    if(cmd === "DC") {
-        return message.channel.send("SO");
-    }
-
-    if(cmd === "LIT") {
-        return message.channel.send("RN");
-    }
-
-    if(cmd === "🔥") {
-        return message.channel.send("🚒");
-    }
-
-    if(hasMemberTagged(message.content)) {
-        var taggedUserArray = findUserRegEx(message.content);
-
-        for(var i = 0; i < taggedUserArray.length; i++) {
-            var user_id = taggedUserArray[i].replace('<@', '').replace('>', '').replace('!', '');
-
-            var server_id = message.member.guild.id;
-
-            db.afks.find({server_id, user_id}, (err, docs) => {
-                if(docs.length !== 0) {
-                    var user = bot.users.get(user_id);
-
-                    return message.channel.send(embedWarningMessage(`The user ${user.username} has set his account as AFK. Please try again later`));
-                }
-            });
-        }
+    if(cmd === `${prefix}ping`) {
+        // Calculates ping between sending a message and editing it, giving a nice round-trip latency.
+        // The second ping is an average latency between the bot and the websocket server (one-way, not round-trip)
+        const m = await message.channel.send("Ping?");
+        m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(bot.ping)}ms`);
     }
 });
 
