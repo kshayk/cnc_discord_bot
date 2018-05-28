@@ -1,6 +1,8 @@
 const botconfig = require('./botconfig.json');
 const Discord = require('discord.js');
 const fs = require('fs');
+const mongojs = require('mongojs');
+const db = mongojs('cnc_bot', ['afks', 'reports']); //specifiyng the database and table(s)
 
 const api_keys = require('./api_keys.js');
 
@@ -9,12 +11,14 @@ const bot = new Discord.Client({disableEveryone: true});
 bot.commands = new Discord.Collection();
 
 var file_descriptions = [];
+//Preparing all the command files here
 fs.readdir("./commands/", (err, files) => {
     if(err) {
         console.log(err);
         return;
     }
 
+    //getting only js files
     var jsfile = files.filter(f => f.split(".").pop() === "js");
     if(jsfile.length === 0) {
         console.log("No JS files found.");
@@ -24,11 +28,13 @@ fs.readdir("./commands/", (err, files) => {
     jsfile.forEach((f, i) => {
         var props = require(`./commands/${f}`);
 
+        //preparing the array to later show in the $help command
         var file_desc_object = {};
         file_desc_object.name = props.help.name;
         file_desc_object.description = props.help.description;
         file_descriptions.push(file_desc_object);
 
+        //inserting the files to the bots memory
         bot.commands.set(props.help.name, props);
     });
 });
