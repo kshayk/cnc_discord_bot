@@ -46,26 +46,26 @@ module.exports.run = async (bot, message, args, helpers) => {
     var mute_time = args[1];
 
     if( ! mute_time || mute_time === null || mute_time === "") {
-        return message.reply(helpers.embedErrorMessage("Time period must be specified"));
+        return message.channel.send(helpers.embedErrorMessage("Time period must be specified"));
     }
 
-    if(typeof(mute_time) === 'number') {
-        return message.reply(helpers.embedErrorMessage("The time period can only be specified by words. For example: 2s, 3 minutes"));
+    if(/^\d+$/.test(mute_time.replace(" ", ""))) {
+        return message.channel.send(helpers.embedErrorMessage("The time period can only be specified by words. For example: 2s, 3 minutes"));
     }
 
     var ms_muted_time = ms(mute_time);
 
     if((ms_muted_time / 1000) > 3600) {
-        return message.reply(helpers.embedWarningMessage("You can not mute a user for more than an hour"));
+        return message.channel.send(helpers.embedWarningMessage("You can not mute a user for more than an hour"));
     }
 
     if(message.member.roles.find("name", "muted")){
-       return message.reply(helpers.embedWarningMessage("This user is already muted"));
-   }
+       return message.channel.send(helpers.embedWarningMessage("This user is already muted"));
+    }
 
     await(tagged_member.addRole(mute_role.id));
 
-    message.reply(`<@${tagged_member.id}> has been muted for ${ms(ms_muted_time, { long: true })}`);
+    message.channel.send(`<@${tagged_member.id}> has been muted for ${ms(ms_muted_time, { long: true })}`);
 
     setTimeout(function() {
         tagged_member.removeRole(mute_role.id);

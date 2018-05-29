@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const mongojs = require('mongojs');
+const botconfig = require('../botconfig.json');
 
 const bot = new Discord.Client({disableEveryone: true});
 const db = mongojs('cnc_bot', ['afks', 'reports']); //specifiyng the database and table(s)
@@ -94,7 +95,7 @@ module.exports.run = async (bot, message, args, helpers) => {
                                 let kickEmbed = new Discord.RichEmbed()
                                     .setDescription("Kick user?")
                                     .setColor("#efad5d")
-                                    .addField("Violator", `The user ${rUser} with ID: ${rUser.id} got ${new_strike} reports on his account. To kick the accound do: ${prefix}kick {account}`);
+                                    .addField("Violator", `The user ${rUser} with ID: ${rUser.id} got ${new_strike} reports on his account. To kick the accound do: ${botconfig.prefix}kick {account}`);
 
                                 return reportsChannel.send(kickEmbed);
                             }
