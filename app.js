@@ -76,6 +76,7 @@ bot.on("message", async message => {
         }
 
         if(hasMemberTagged(message.content)) {
+            return;
             var taggedUserArray = findUserRegEx(message.content);
 
             for(var i = 0; i < taggedUserArray.length; i++) {
