@@ -2,7 +2,7 @@ const botconfig = require('./botconfig.json');
 const Discord = require('discord.js');
 const fs = require('fs');
 const mongojs = require('mongojs');
-const db = mongojs('cnc_bot', ['afks', 'reports']); //specifiyng the database and table(s)
+const db = mongojs('cnc_bot', ['afks', 'reports', 'disabled_features']); //specifiyng the database and table(s)
 
 const api_keys = require('./api_keys.js');
 
@@ -50,6 +50,11 @@ bot.on("ready", async () => {
 });
 
 bot.on("message", async message => {
+    //temp disaable on some channels
+    if(message.channel.id === '312178681298550785' || message.channel.id ===  "392703710213439499") {
+        return;
+    }
+
     if(message.author.bot) return;
     if(message.channel.type === "dm") return;
 
@@ -94,7 +99,15 @@ bot.on("message", async message => {
             }
         }
 
-        return;
+        // var ok_variations = ['ok', 'o k', 'okay', 'o','k', 'okey'];
+        //
+        // if(message.author.id === "163725432472993795" && ok_variations.indexOf(message.content.toLowerCase()) != -1) {
+        //     message.delete();
+        //
+        //     message.channel.send(`deleted 'ok' message by <@${message.author.id}>`);
+        // }
+        //
+        // return;
     };
 
     function embedWarningMessage(message) {
