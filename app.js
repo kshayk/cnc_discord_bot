@@ -51,9 +51,9 @@ bot.on("ready", async () => {
 
 bot.on("message", async message => {
     //temp disaable on some channels
-    if(message.channel.id === '312178681298550785' || message.channel.id ===  "392703710213439499") {
-        return;
-    }
+    // if(message.channel.id === '312178681298550785' || message.channel.id ===  "392703710213439499") {
+    //     return;
+    // }
 
     if(message.author.bot) return;
     if(message.channel.type === "dm") return;
