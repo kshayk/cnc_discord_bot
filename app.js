@@ -68,18 +68,6 @@ bot.on("message", async message => {
     //In this case, some of the commands are without the prefix, so checking them first.
     //if one of them matches the if statements; perform the action. if not; return.
     if(message.content.indexOf(prefix) !== 0) {
-        if(cmd === "DC") {
-            return message.channel.send("SO");
-        }
-
-        if(cmd === "LIT") {
-            return message.channel.send("RN");
-        }
-
-        if(cmd === "🔥") {
-            return message.channel.send("🚒");
-        }
-
         if(hasMemberTagged(message.content)) {
             return;
             var taggedUserArray = findUserRegEx(message.content);
@@ -150,7 +138,7 @@ bot.on("message", async message => {
             capitalizeFirstLetter,
             embedWarningMessage,
             embedErrorMessage
-        }
+        };
 
         commandfile.run(bot, message, args, helper_functions);
     } else {
