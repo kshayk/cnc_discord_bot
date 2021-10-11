@@ -5,7 +5,6 @@ const mongojs = require('mongojs');
 const db = mongojs('cnc_bot', ['afks', 'reports', 'disabled_features']); //specifiyng the database and table(s)
 
 const api_keys = require('./api_keys.js');
-
 const bot = new Discord.Client({disableEveryone: true});
 
 bot.commands = new Discord.Collection();
@@ -50,11 +49,6 @@ bot.on("ready", async () => {
 });
 
 bot.on("message", async message => {
-    //temp disaable on some channels
-    // if(message.channel.id === '312178681298550785' || message.channel.id ===  "392703710213439499") {
-    //     return;
-    // }
-
     if(message.author.bot) return;
     if(message.channel.type === "dm") return;
 
@@ -68,35 +62,6 @@ bot.on("message", async message => {
     //In this case, some of the commands are without the prefix, so checking them first.
     //if one of them matches the if statements; perform the action. if not; return.
     if(message.content.indexOf(prefix) !== 0) {
-        if(hasMemberTagged(message.content)) {
-            return;
-            var taggedUserArray = findUserRegEx(message.content);
-
-            for(var i = 0; i < taggedUserArray.length; i++) {
-                var user_id = taggedUserArray[i].replace('<@', '').replace('>', '').replace('!', '');
-
-                var server_id = message.member.guild.id;
-
-                db.afks.find({server_id, user_id}, (err, docs) => {
-                    if(docs.length !== 0) {
-                        var user = bot.users.get(user_id);
-
-                        return message.channel.send(embedWarningMessage(`The user ${user.username} has set his account as AFK. Please try again later`));
-                    }
-                });
-            }
-        }
-
-        // var ok_variations = ['ok', 'o k', 'okay', 'o','k', 'okey'];
-        //
-        // if(message.author.id === "163725432472993795" && ok_variations.indexOf(message.content.toLowerCase()) != -1) {
-        //     message.delete();
-        //
-        //     message.channel.send(`deleted 'ok' message by <@${message.author.id}>`);
-        // }
-        //
-        // return;
-    };
 
     function embedWarningMessage(message) {
         var botembed = new Discord.RichEmbed()
@@ -151,11 +116,7 @@ bot.login(api_keys.discord_bot_token);
 function hasMemberTagged(message_content) {
     var getTaggedUsersArray = findUserRegEx(message_content);
 
-    if(getTaggedUsersArray.length !== 0) {
-        return true;
-    } else {
-        return false;
-    }
+    return getTaggedUsersArray.length !== 0;
 }
 
 function findUserRegEx(message_content) {
