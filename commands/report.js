@@ -6,6 +6,7 @@ const bot = new Discord.Client({disableEveryone: true});
 const db = mongojs('cnc_bot', ['afks', 'reports']); //specifiyng the database and table(s)
 
 module.exports.run = async (bot, message, args, helpers) => {
+    return false;
     let rUser = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0])); // this will find the user that was mentioned in the message
 
     if( ! rUser) {

@@ -62,8 +62,6 @@ bot.on("message", async message => {
     //In this case, some of the commands are without the prefix, so checking them first.
     //if one of them matches the if statements; perform the action. if not; return.
     if(message.content.indexOf(prefix) !== 0) {
-        return;
-    }
 
     function embedWarningMessage(message) {
         var botembed = new Discord.RichEmbed()

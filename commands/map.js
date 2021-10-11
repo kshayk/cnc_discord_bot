@@ -58,9 +58,9 @@ module.exports.run = async (bot, message, args, helpers) => {
             },15000);
         }
     });
-}
+};
 
 module.exports.help = {
     name: "map",
     description: "sets your text as ASCII. Usage: to get all the ascii fonts, do $ascii fonts. To write something in ASCII do $ascii font my text here ($ascii 3-d test)"
-}
+};

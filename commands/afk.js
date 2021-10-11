@@ -4,6 +4,7 @@ const db = mongojs('cnc_bot', ['afks', 'reports']); //specifiyng the database an
 
 //translate a text: $translate hebrew hello world
 module.exports.run = async (bot, message, args, helpers) => {
+    return false;
     var server_id = message.member.guild.id;
     var user_id = message.member.id.replace('!', '');
 
